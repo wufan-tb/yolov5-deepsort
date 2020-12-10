@@ -6,7 +6,6 @@ from utils.datasets import *
 from utils.utils import *
 import sys
 from tqdm import tqdm
-sys.path.append('../')
 from utils.post_process import *
 from deep_sort.utils.parser import get_config
 from deep_sort.deep_sort import DeepSort
