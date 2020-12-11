@@ -147,7 +147,7 @@ dmypy.json
 *.pth
 *.pt
 *.h5
-*.ckpt*
+*ckpt*
 *.pkl
 *ubyte*
 *.ipynb
