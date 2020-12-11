@@ -137,7 +137,6 @@ dmypy.json
 
 # 图片过滤
 *.xml
-*.png
 *.jpg
 *.zip
 *.mp4
