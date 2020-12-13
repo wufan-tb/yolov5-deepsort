@@ -4,6 +4,6 @@
 - 密度估计是检测的后处理，简单的涂色+高斯模糊实现的demo
 
 ### 效果展示：
- ![demo.jpg](demo.png)
+ ![demo](./demo.png)
 
 ### 原版yolov5参考[yolov5](https://github.com/ultralytics/yolov5)
