@@ -12,10 +12,10 @@ __all__ = ['DeepSort']
 
 
 class DeepSort(object):
-    def __init__(self, model_path, max_dist=0.2, min_confidence=0.3, nms_max_overlap=1.0, max_iou_distance=0.7, max_age=70, n_init=3, nn_budget=100, use_cuda=True):
+    def __init__(self, model_path, max_dist=0.2, min_confidence=0.3, nms_max_overlap=1.0, max_iou_distance=0.7, max_age=70, n_init=3, nn_budget=100, use_cuda=True, use_appearence=True):
         self.min_confidence = min_confidence
         self.nms_max_overlap = nms_max_overlap
-
+        self.use_appearence=use_appearence
         self.extractor = Extractor(model_path, use_cuda=use_cuda)
 
         max_cosine_distance = max_dist
@@ -26,7 +26,11 @@ class DeepSort(object):
     def update(self, bbox_xywh, confidences, labels, ori_img):
         self.height, self.width = ori_img.shape[:2]
         # generate detections
-        features = self._get_features(bbox_xywh, ori_img)
+        
+        if self.use_appearence:
+            features = self._get_features(bbox_xywh, ori_img)
+        else:
+            features = np.array([np.array([0.5,0.5]) for _ in range(len(bbox_xywh))])
         bbox_tlwh = self._xywh_to_tlwh(bbox_xywh)
         detections = [Detection(bbox_tlwh[i], conf, labels[i], features[i]) for i,conf in enumerate(confidences) if conf>self.min_confidence]
 
