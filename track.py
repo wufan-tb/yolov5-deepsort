@@ -70,14 +70,15 @@ def detect(save_img=False):
                         max_dist=cfg.DEEPSORT.MAX_DIST, min_confidence=cfg.DEEPSORT.MIN_CONFIDENCE, 
                         nms_max_overlap=cfg.DEEPSORT.NMS_MAX_OVERLAP, max_iou_distance=cfg.DEEPSORT.MAX_IOU_DISTANCE, 
                         max_age=cfg.DEEPSORT.MAX_AGE, n_init=cfg.DEEPSORT.N_INIT, nn_budget=cfg.DEEPSORT.NN_BUDGET, 
-                        use_cuda=True, use_appearence=False)
-    
+                        use_cuda=True, use_appearence=True)
     if source.endswith('.mp4') or source.endswith('.avi'):
         fps=25
         output_path=source[0:-4]+'_demo.avi'
         fourcc = cv2.VideoWriter_fourcc('P','I','M','1')
-        my_video = cv2.VideoWriter(output_path, fourcc, fps ,(1270,720))
-    
+        cap = cv2.VideoCapture(source)
+        _, frame = cap.read()
+        cap.release()
+        my_video = cv2.VideoWriter(output_path, fourcc, fps ,(frame.shape[1],frame.shape[0]))
     # Load model
     model = attempt_load(weights, map_location=device)  # load FP32 model
     imgsz = check_img_size(imgsz, s=model.stride.max())  # check img_size
@@ -90,7 +91,6 @@ def detect(save_img=False):
         modelc = torch_utils.load_classifier(name='resnet101', n=2)  # initialize
         modelc.load_state_dict(torch.load('weights/resnet101.pt', map_location=device)['model'])  # load weights
         modelc.to(device).eval()
-
     # Set Dataloader
     vid_path, vid_writer = None, None
     if webcam:
@@ -110,6 +110,7 @@ def detect(save_img=False):
     img = torch.zeros((1, 3, imgsz, imgsz), device=device)  # init img
     _ = model(img.half() if half else img) if device.type != 'cpu' else None  # run once
     for path, img, im0s, vid_cap in dataset:
+            
         img = torch.from_numpy(img).to(device)
         img = img.half() if half else img.float()  # uint8 to fp16/32
         img /= 255.0  # 0 - 255 to 0.0 - 1.0
@@ -176,14 +177,14 @@ def detect(save_img=False):
                     Vx = outputs[:, 6]/10
                     Vy = outputs[:, 7]/10
                     im0=draw_boxes(im0, bbox_xyxy, label_names, identities)
-                    
+            
             my_video.write(im0)
             print('-----------')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--weights', nargs='+', type=str, default='./weights/yolov5l.pt', help='model.pt path(s)')
-    parser.add_argument('--source', type=str, default='./inference/video/shortone.mp4', help='source')  # file/folder, 0 for webcam
+    parser.add_argument('--source', type=str, default='./inference/video/car.mp4', help='source')  # file/folder, 0 for webcam
     parser.add_argument('--output', type=str, default='./inference/output', help='output folder')  # output folder
     parser.add_argument('--img-size', type=int, default=640, help='inference size (pixels)')
     parser.add_argument('--conf-thres', type=float, default=0.4, help='object confidence threshold')

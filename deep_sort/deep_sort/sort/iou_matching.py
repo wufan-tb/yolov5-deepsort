@@ -3,9 +3,16 @@ from __future__ import absolute_import
 import numpy as np
 from . import linear_assignment
 
-
+# %%
+import numpy as np
+box=np.array([10,10,20,20])
+candis=np.array([[10,10,20,20],[100,100,110,110],[200,200,210,210]])
+# %%
+centerA=np.array([(box[0]+box[2])/2,(box[1]+box[3])/2])
+centerB=np.array([(candis[:,0]+candis[:,2])/2,(candis[:,1]+candis[:,3])/2]).T
+center_dis=np.sum((centerA-centerB)**2,axis=-1)
+# %%
 def iou(bbox, candidates):
-    print(bbox.shape,candidates.shape)
     """Computer intersection over union.
 
     Parameters
@@ -37,9 +44,8 @@ def iou(bbox, candidates):
     area_intersection = wh.prod(axis=1)
     area_bbox = bbox[2:].prod()
     area_candidates = candidates[:, 2:].prod(axis=1)
-    print(area_intersection / (area_bbox + area_candidates - area_intersection))
     return area_intersection / (area_bbox + area_candidates - area_intersection)
-
+# %%
 
 def iou_cost(tracks, detections, track_indices=None,
              detection_indices=None):
