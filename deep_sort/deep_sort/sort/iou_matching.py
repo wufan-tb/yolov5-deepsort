@@ -3,14 +3,36 @@ from __future__ import absolute_import
 import numpy as np
 from . import linear_assignment
 
-# %%
-import numpy as np
-box=np.array([10,10,20,20])
-candis=np.array([[10,10,20,20],[100,100,110,110],[200,200,210,210]])
-# %%
-centerA=np.array([(box[0]+box[2])/2,(box[1]+box[3])/2])
-centerB=np.array([(candis[:,0]+candis[:,2])/2,(candis[:,1]+candis[:,3])/2]).T
-center_dis=np.sum((centerA-centerB)**2,axis=-1)
+
+def diou(box,candis):
+    """Computer distance intersection over union, called diou(imporved on iou)
+    
+    Parameters
+    ----------
+    bbox : ndarray
+        A bounding box in format `(top left x, top left y, width, height)`.
+    candidates : ndarray
+        A matrix of candidate bounding boxes (one per row) in the same format
+        as `bbox`.
+
+    Returns
+    -------
+    ndarray
+        The intersection over union in [0, 1] between the `bbox` and each
+        candidate. A higher score means a larger fraction of the `bbox` is
+        occluded by the candidate.
+    """
+    centerA=np.array([box[0]+box[2]/2,box[1]+box[3]/2])
+    centerB=np.array([candis[:,0]+candis[:,2]/2,candis[:,1]+candis[:,3]/2]).T
+    center_dis=np.sum((centerA-centerB)**2,axis=-1)
+    max_x=np.maximum(box[0]+box[2], candis[:,0]+candis[:,2])
+    min_x=np.minimum(box[0], candis[:,0])
+    max_y=np.maximum(box[1]+box[3], candis[:,1]+candis[:,3])
+    min_y=np.minimum(box[1], candis[:,1])
+    max_dis=(max_x-min_x)**2+(max_y-min_y)**2
+    rela_dis=center_dis/max_dis
+    return (1+iou(box,candis)-rela_dis)/2
+
 # %%
 def iou(bbox, candidates):
     """Computer intersection over union.
@@ -85,5 +107,5 @@ def iou_cost(tracks, detections, track_indices=None,
 
         bbox = tracks[track_idx].to_tlwh()
         candidates = np.asarray([detections[i].tlwh for i in detection_indices])
-        cost_matrix[row, :] = 1. - iou(bbox, candidates)
+        cost_matrix[row, :] = 1. - diou(bbox, candidates)
     return cost_matrix
