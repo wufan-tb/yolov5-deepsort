@@ -48,14 +48,10 @@ def value_to_color(grayimg,low_value=15,high_value=220,low_color=[10,10,10],high
     r=low_color[0]+((grayimg-low_value)/(high_value-low_value))*(high_color[0]-low_color[0])
     g=low_color[1]+((grayimg-low_value)/(high_value-low_value))*(high_color[1]-low_color[1])
     b=low_color[2]+((grayimg-low_value)/(high_value-low_value))*(high_color[2]-low_color[2])
-    # cv2.imwrite('r.jpg',r)
-    # cv2.imwrite('g.jpg',g)
-    # cv2.imwrite('b.jpg',b)
     rgb=np.ones((grayimg.shape[0],grayimg.shape[1],3))
     rgb[:,:,0]=r
     rgb[:,:,1]=g
     rgb[:,:,2]=b
-    # cv2.imwrite('rgb.jpg',rgb)
     return rgb.astype('uint8')
               
 def draw_obj_dense(img,box_list,k_size=281,beta=1.5):
