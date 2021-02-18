@@ -31,7 +31,7 @@ def compute_color_for_labels(label):
     color = [int((p * (label ** 2 - label + 1)) % 255) for p in palette]
     return tuple(color)
     
-def draw_boxes(img, bbox, labels, identities=None, Vx=None, Vy=None):
+def draw_boxes(img, bbox, labels, identities=None, v=None):
     for i, box in enumerate(bbox):
         xmin, ymin, xmax, ymax = [int(i) for i in box]
         ymin = min(img.shape[0]-5,max(5,ymin))
@@ -42,15 +42,22 @@ def draw_boxes(img, bbox, labels, identities=None, Vx=None, Vy=None):
         id = int(identities[i]) if identities is not None else 0
         color = compute_color_for_labels(id)
         label=labels[i]
-        vx=Vx[i] if Vx is not None else 0
-        vy=Vy[i] if Vy is not None else 0
-        info = '{:d}'.format(id)
+        v=v if v is not None else 0
+        v_real=velocity_transform(v[i],ymax,350,H=6,L1=2,L2=50)
+        info = '{:d}|{:.1f}km/s'.format(id,v_real)
         t_size=cv2.getTextSize(info, cv2.FONT_HERSHEY_TRIPLEX, 0.4 , 1)[0]
         cv2.rectangle(img, (xmin, ymin), (xmax, ymax), color, 2)
         cv2.rectangle(img, (xmin, ymin), (xmin + t_size[0]+2, ymin + t_size[1]+4), color, -1)
         cv2.putText(img, info, (xmin+1, ymin+t_size[1]+1), cv2.FONT_HERSHEY_TRIPLEX, 0.4, [255,255,255], 1)
     return img
-    
+
+def velocity_transform(v_pix,pixel_y,pixel_ymax,H,L1,L2):
+    theta1=math.atan(L1/H)
+    theta2=math.atan(L2/H)
+    theta=theta1+(theta2-theta1)*((pixel_ymax-pixel_y)/pixel_ymax)
+    rate=H/((math.cos(theta))**2)
+    return rate*v_pix
+
 def detect(save_img=False):
     out, source, weights, view_img, save_txt, imgsz = \
         opt.output, opt.source, opt.weights, opt.view_img, opt.save_txt, opt.img_size
@@ -174,9 +181,8 @@ def detect(save_img=False):
                     labels = outputs[:, 4]
                     label_names=[names[int(item)] for item in labels]
                     identities = outputs[:, 5]
-                    Vx = outputs[:, 6]/10
-                    Vy = outputs[:, 7]/10
-                    im0=draw_boxes(im0, bbox_xyxy, label_names, identities)
+                    v=np.sqrt((outputs[:, 6]/10)**2+(outputs[:, 7]/10)**2)
+                    im0=draw_boxes(im0, bbox_xyxy, label_names, identities,v)
             
             my_video.write(im0)
             print('-----------')
@@ -184,7 +190,7 @@ def detect(save_img=False):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--weights', nargs='+', type=str, default='./weights/yolov5l.pt', help='model.pt path(s)')
-    parser.add_argument('--source', type=str, default='D:/dataset/video/car.mp4', help='source')  # file/folder, 0 for webcam
+    parser.add_argument('--source', type=str, default='D:/dataset/video/1.mp4', help='source')  # file/folder, 0 for webcam
     parser.add_argument('--output', type=str, default='./inference/output', help='output folder')  # output folder
     parser.add_argument('--img-size', type=int, default=640, help='inference size (pixels)')
     parser.add_argument('--conf-thres', type=float, default=0.4, help='object confidence threshold')
