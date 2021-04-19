@@ -593,13 +593,12 @@ def non_max_suppression(prediction, conf_thres=0.1, iou_thres=0.6, merge=False, 
 
         # Compute conf
         x[:, 5:] *= x[:, 4:5]  # conf = obj_conf * cls_conf
-
         # Box (center x, center y, width, height) to (x1, y1, x2, y2)
         box = xywh2xyxy(x[:, :4])
-
         # Detections matrix nx6 (xyxy, conf, cls)
         if multi_label:
             i, j = (x[:, 5:] > conf_thres).nonzero(as_tuple=False).t()
+            soft_label=x[i,5:]
             x = torch.cat((box[i], x[i, j + 5, None], j[:, None].float()), 1)
         else:  # best class only
             conf, j = x[:, 5:].max(1, keepdim=True)
@@ -615,6 +614,7 @@ def non_max_suppression(prediction, conf_thres=0.1, iou_thres=0.6, merge=False, 
 
         # If none remain process next image
         n = x.shape[0]  # number of boxes
+        print("=====",n)
         if not n:
             continue
 
@@ -637,8 +637,10 @@ def non_max_suppression(prediction, conf_thres=0.1, iou_thres=0.6, merge=False, 
             except:  # possible CUDA error https://github.com/ultralytics/yolov3/issues/1139
                 print(x, i, x.shape, i.shape)
                 pass
-
         output[xi] = x[i]
+        soft_label=np.array(soft_label[i].cpu())
+        print(x[i].shape,soft_label.shape)
+        print(x[i],np.max(np.array(soft_label)),soft_label[:,1])
         if (time.time() - t) > time_limit:
             break  # time limit exceeded
 

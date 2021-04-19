@@ -135,11 +135,9 @@ class LoadImages:  # for inference
 
         # Padded resize
         img = letterbox(img0, new_shape=self.img_size)[0]
-
         # Convert
         img = img[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB, to 3x416x416
         img = np.ascontiguousarray(img)
-
         # cv2.imwrite(path + '.letterbox.jpg', 255 * img.transpose((1, 2, 0))[:, :, ::-1])  # save letterbox image
         return path, img, img0, self.cap
 
