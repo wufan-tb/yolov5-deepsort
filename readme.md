@@ -1,10 +1,6 @@
-# 基于 yolo5+deep_sort 的物体计数以及密度估计
+# An Object Counting and Dense Estimation Based on Yolov5+Deepsort
 
-- deepsort 输入增加了类别，输出了增加了类别和速度
-- deepsort IOU替换成为DIOU
-- 密度估计是检测的后处理，简单的涂色+高斯模糊实现的demo
-
-### 效果展示：
+### Demo：
  ![demo](./demo.png)
 
-### 原版yolov5参考[yolov5](https://github.com/ultralytics/yolov5)
+### Origin Yolov5 2.0[yolov5](https://github.com/ultralytics/yolov5)
